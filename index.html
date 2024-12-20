@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAME</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(90deg, #e3ffe7, #d9e7ff);
+            text-align: center;
+        }
+
+        .front {
+            padding: 20px;
+        }
+
+        .choice {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px auto;
+            max-width: 600px;
+            flex-wrap: wrap;
+        }
+
+        .choice div {
+            flex: 1;
+            margin: 5px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .choice div:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .result {
+            font-size: 1.5em;
+            margin: 20px;
+            font-weight: bold;
+            color: #333;
+            transition: transform 0.5s ease, color 0.5s ease;
+        }
+
+        .score {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        .score div {
+            text-align: center;
+            font-size: 1.2em;
+            padding: 10px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .settings {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .choice {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .score {
+                flex-direction: column;
+            }
+
+            .choice div {
+                width: 80%; /* Make the choices bigger on smaller screens */
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="settings" id="settings">
+        ⚙️
+    </div>
+
+    <div class="front">
+        <h2 id="welcome">Welcome, Player! Enter your name:</h2>
+        <input type="text" id="playerName" placeholder="Enter your name" style="padding: 5px; margin: 10px;">
+        <button onclick="startGame()" style="padding: 5px;">Start Game</button>
+    </div>
+
+    <div id="gameArea" style="display: none;">
+        <div class="choice">
+            <div class="choice1" id="Rock">
+                <h1>🪨</h1>
+                <h2>Rock</h2>
+            </div>
+            <div class="choice2" id="Paper">
+                <h1>📃</h1>
+                <h2>Paper</h2>
+            </div>
+            <div class="choice3" id="Scissor">
+                <h1>✂️</h1>
+                <h2>Scissor</h2>
+            </div>
+        </div>
+
+        <div class="score">
+            <div id="userSection">
+                <h1 id="userScore">0</h1>
+                <h2 id="userLabel">You</h2>
+            </div>
+            <div id="compSection">
+                <h1 id="compScore">0</h1>
+                <h2>Comp</h2>
+            </div>
+        </div>
+
+        <div class="result" id="result">Make your move!</div>
+    </div>
+
+    <script>
+       const userScoreElem = document.getElementById('userScore');
+const compScoreElem = document.getElementById('compScore');
+const resultElem = document.getElementById('result');
+const choices = document.querySelectorAll('.choice div');
+const userSection = document.getElementById('userSection');
+const compSection = document.getElementById('compSection');
+const playerNameInput = document.getElementById('playerName');
+const welcomeMessage = document.getElementById('welcome');
+const gameArea = document.getElementById('gameArea');
+const settingsButton = document.getElementById('settings');
+
+let userScore = 0;
+let compScore = 0;
+let playerName = "Player";
+let history = [];
+
+const computerChoice = () => {
+    const choices = ['Rock', 'Paper', 'Scissor'];
+    return choices[Math.floor(Math.random() * 3)];
+};
+
+const playGame = (userChoice) => {
+    const compChoice = computerChoice();
+    let result;
+
+    if (userChoice === compChoice) {
+        result = `It's a draw! Both chose ${compChoice}.`;
+    } else if (
+        (userChoice === 'Rock' && compChoice === 'Scissor') ||
+        (userChoice === 'Paper' && compChoice === 'Rock') ||
+        (userChoice === 'Scissor' && compChoice === 'Paper')
+    ) {
+        userScore++;
+        userScoreElem.textContent = userScore;
+        result = `🎉 ${playerName} wins! Computer chose ${compChoice}.`;
+        resultElem.style.color = "green";
+        userSection.classList.add('winner');
+        userSection.classList.remove('loser');
+        compSection.classList.remove('winner');
+        compSection.classList.add('loser');
+        confettiAnimation();
+    } else {
+        compScore++;
+        compScoreElem.textContent = compScore;
+        result = `${playerName} loses! Computer chose ${compChoice}.`;
+        resultElem.style.color = "red";
+        compSection.classList.add('winner');
+        compSection.classList.remove('loser');
+        userSection.classList.remove('winner');
+        userSection.classList.add('loser');
+    }
+
+    resultElem.textContent = result;
+    history.push(result);
+};
+
+const confettiAnimation = () => {
+    confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+    });
+};
+
+const startGame = () => {
+    playerName = playerNameInput.value || "Player";
+    welcomeMessage.textContent = `Welcome, ${playerName}!`;
+    document.getElementById('userLabel').textContent = playerName;
+    gameArea.style.display = "block";
+    playerNameInput.style.display = "none";
+};
+
+settingsButton.addEventListener('click', () => {
+    alert(`Game History:\n\n${history.join('\n')}`);
+});
+
+// Event listener for the 'Enter' key
+playerNameInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        startGame();
+    }
+});
+
+choices.forEach(choice => {
+    choice.addEventListener('click', () => playGame(choice.id));
+});
+</script>
+</body>
+</html>
